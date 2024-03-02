@@ -44,14 +44,21 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        //TODO: REMOVE "/all-orders", "/status-order/** "/demoAll" "/register/" FROM permitAll() 
+        //     AND "/demoAdmin" FROM hasAuthority(Role.ADMIN.toString())
         return http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
                 req -> req
                     .requestMatchers("/login/**", "/register/**", 
-                                                "/demoAll/**", 
-                                                "/add-order/**", "/order/**").permitAll()
-                    .requestMatchers("/demoAdmin").hasAuthority(Role.ADMIN.toString())
+                                                "/demoAll", 
+                                                "/add-order/**", "/order/**", "/all-orders", "/status-order/**").permitAll()
+
+                    .requestMatchers("/status-order/**", "/all-orders").hasAuthority(Role.USER.toString())
+
+                    .requestMatchers("/register/**",
+                                                "/demoAdmin", 
+                                                "/status-order/**", "/all-orders").hasAuthority(Role.ADMIN.toString())
                     .anyRequest().authenticated()
             ).userDetailsService(employeeDetailsService)
             .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedHandler)

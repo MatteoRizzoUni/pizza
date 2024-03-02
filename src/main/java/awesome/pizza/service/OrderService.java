@@ -43,19 +43,46 @@ public class OrderService {
                                         new OrderResponse(order.getId(), order.getStatus(), 
                                                         order.getOrderDateTime(), order.getDeliveryOrderDateTime()));
 
-
-    }
-
-    private CustomerResponse CustomerResponse() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'CustomerResponse'");
     }
 
     public OrderResponse getOrder(Long id) {
+
         Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
 
         return new OrderResponse(order.getId(), order.getStatus(), 
                                 order.getOrderDateTime(), order.getDeliveryOrderDateTime());
     }
+
+    public OrderResponse putOrder(Long id, Order orderRequest) {
+        try{
+            Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+            order.setStatus(orderRequest.getStatus());
+            order = orderRepository.save(order);
+            return new OrderResponse(order.getId(), order.getStatus(), 
+                                    order.getOrderDateTime(), order.getDeliveryOrderDateTime());
+           
+        }catch (RuntimeException e) {
+            throw new RuntimeException("Order not found");
+
+        }
+
+    }
+
+    public Iterable<OrderResponse> getAllOrdersAsc() {
+
+        return orderRepository.findAllByOrderByDeliveryOrderDateTimeAsc().stream()
+                            .map(order -> new OrderResponse(order.getId(), order.getStatus(), 
+                                order.getOrderDateTime(), order.getDeliveryOrderDateTime())).toList();
+
+    }
+    public Iterable<OrderResponse> getAllOrdersDesc() {
+
+        return orderRepository.findAllByOrderByDeliveryOrderDateTimeDesc().stream()
+                            .map(order -> new OrderResponse(order.getId(), order.getStatus(), 
+                                order.getOrderDateTime(), order.getDeliveryOrderDateTime())).toList();
+
+    }
+
+    
 
 }
