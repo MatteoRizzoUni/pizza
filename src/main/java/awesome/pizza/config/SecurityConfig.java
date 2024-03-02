@@ -15,7 +15,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 import awesome.pizza.exception.CustomAccessDeniedHandler;
 import awesome.pizza.filter.JwtAuthenticationFilter;
@@ -49,7 +48,9 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
                 req -> req
-                    .requestMatchers("/login/**", "/register/**", "/demoAll/**").permitAll()
+                    .requestMatchers("/login/**", "/register/**", 
+                                                "/demoAll/**", 
+                                                "/add-order/**", "/order/**").permitAll()
                     .requestMatchers("/demoAdmin").hasAuthority(Role.ADMIN.toString())
                     .anyRequest().authenticated()
             ).userDetailsService(employeeDetailsService)

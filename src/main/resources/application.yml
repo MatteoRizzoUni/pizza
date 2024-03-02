@@ -6,6 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
+# Hibernate ddl auto (create, create-drop, validate, update)
       ddl-auto: create-drop
       # ddl-auto: update
     show-sql: true
