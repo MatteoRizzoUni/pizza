@@ -19,24 +19,24 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import awesome.pizza.exception.CustomAccessDeniedHandler;
 import awesome.pizza.filter.JwtAuthenticationFilter;
 import awesome.pizza.model.Role;
-import awesome.pizza.service.EmployeeDetailsService;
+import awesome.pizza.service.CustomUserDetailsService;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final EmployeeDetailsService employeeDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomLogoutHandler logoutHandler;
   
 
-    public SecurityConfig(EmployeeDetailsService employeeDetailsService,
+    public SecurityConfig(CustomUserDetailsService customUserDetailsService,
                         JwtAuthenticationFilter jwtAuthenticationFilter, 
                         CustomAccessDeniedHandler accessDeniedHandler,
                         CustomLogoutHandler logoutHandler) {
                             
-        this.employeeDetailsService = employeeDetailsService;
+        this.customUserDetailsService = customUserDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.accessDeniedHandler = accessDeniedHandler;
         this.logoutHandler = logoutHandler;
@@ -60,7 +60,7 @@ public class SecurityConfig {
                                                 "/demoAdmin", 
                                                 "/status-order/**", "/all-orders").hasAuthority(Role.ADMIN.toString())
                     .anyRequest().authenticated()
-            ).userDetailsService(employeeDetailsService)
+            ).userDetailsService(customUserDetailsService)
             .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedHandler)
                 .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
             .sessionManagement(

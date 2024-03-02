@@ -8,20 +8,20 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import awesome.pizza.response.AuthenticationResponse;
-import awesome.pizza.model.Employee;
+import awesome.pizza.model.User;
 import awesome.pizza.model.Token;
-import awesome.pizza.repository.EmployeeRepository;
+import awesome.pizza.repository.UserRepository;
 import awesome.pizza.repository.TokenRepository;
 
 @Service
 public class AuthenticationService {
-    private final EmployeeRepository repository;
+    private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
 
-    public AuthenticationService(EmployeeRepository repository, 
+    public AuthenticationService(UserRepository repository, 
             PasswordEncoder passwordEncoder, JwtService jwtService, 
             AuthenticationManager authenticationManager,
             TokenRepository tokenRepository) {
@@ -33,55 +33,55 @@ public class AuthenticationService {
     }
 
     //register user
-    public AuthenticationResponse regiser(Employee request) {
+    public AuthenticationResponse regiser(User request) {
 
         if(repository.findByUsername(request.getUsername()).isPresent()) {
             return new AuthenticationResponse(null, "User already exist");
         }
         
-        Employee employee = new Employee();
-        employee.setUsername(request.getUsername());
-        employee.setPassword(passwordEncoder.encode(request.getPassword()));
-        employee.setFirstName(request.getFirstName());
-        employee.setLastName(request.getLastName());
-        employee.setRole(request.getRole());
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setRole(request.getRole());
 
-        employee = repository.save(employee);
+        user = repository.save(user);
 
-        String jwtToken = jwtService.generateToken(employee);
+        String jwtToken = jwtService.generateToken(user);
 
         //save generated Token
-        saveEmployeeToken(employee, jwtToken);
+        saveUserToken(user, jwtToken);
 
 
-        return new AuthenticationResponse(jwtToken, employee.getRole() + ":" + employee.getUsername() + " registration was successful");
+        return new AuthenticationResponse(jwtToken, user.getRole() + ":" + user.getUsername() + " registration was successful");
 
     }
 
     
     //login user
-    public AuthenticationResponse authenticate(Employee request) {
+    public AuthenticationResponse authenticate(User request) {
        authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(
                 request.getUsername(), 
                 request.getPassword())
             );
 
-        Employee employee = repository.findByUsername(request.getUsername()).orElseThrow();
-        String jwtToken = jwtService.generateToken(employee);
+        User user = repository.findByUsername(request.getUsername()).orElseThrow();
+        String jwtToken = jwtService.generateToken(user);
 
         //revoke all token by user
-        revokeAllTokenByEmployee(employee);
+        revokeAllTokenByUser(user);
 
         //save new token
-        saveEmployeeToken(employee, jwtToken);
+        saveUserToken(user, jwtToken);
         
-        return new AuthenticationResponse(jwtToken, employee.getRole()+ ":" + employee.getUsername() + " login was successful");
+        return new AuthenticationResponse(jwtToken, user.getRole()+ ":" + user.getUsername() + " login was successful");
         
     }
 
-    private void revokeAllTokenByEmployee(Employee employee) {
-        List<Token> validTokenListByUser = tokenRepository.findAllTokensByUser(employee.getId());
+    private void revokeAllTokenByUser(User user) {
+        List<Token> validTokenListByUser = tokenRepository.findAllTokensByUser(user.getId());
         
         if(!validTokenListByUser.isEmpty()) {
             validTokenListByUser.forEach(token -> {
@@ -92,11 +92,11 @@ public class AuthenticationService {
 
     }
 
-    private void saveEmployeeToken(Employee employee, String jwtToken) {
+    private void saveUserToken(User user, String jwtToken) {
         Token token = new Token();
         token.setToken(jwtToken);
         token.setLoggedOut(false);
-        token.setEmployee(employee);
+        token.setUser(user);
         tokenRepository.save(token);
     }
 }

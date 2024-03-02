@@ -8,8 +8,7 @@ import javax.crypto.SecretKey;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import awesome.pizza.model.Employee;
-import awesome.pizza.model.Token;
+import awesome.pizza.model.User;
 import awesome.pizza.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -31,12 +30,12 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public boolean isValid(String token, UserDetails employee){
+    public boolean isValid(String token, UserDetails user){
         String username = extractUsername(token);
 
         boolean isTokenValid = tokenRepository.findByToken(token).map(t -> t.isLoggedOut()).orElse(false);
 
-        return (username.equals(employee.getUsername()) && !isTokenExpired(token) && !isTokenValid);
+        return (username.equals(user.getUsername()) && !isTokenExpired(token) && !isTokenValid);
 
     }
 
@@ -65,11 +64,11 @@ public class JwtService {
     }
 
 
-    public String generateToken(Employee employee) {
+    public String generateToken(User user) {
         //TOKEN EXPIRATION TIME: 24 HOURS
         return Jwts
             .builder()
-            .subject(employee.getUsername())
+            .subject(user.getUsername())
             .issuedAt(new Date(System.currentTimeMillis()))
             .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
             .signWith(getSigninKey())

@@ -13,12 +13,12 @@ import awesome.pizza.model.Token;
 public interface TokenRepository extends JpaRepository<Token, Long>{
 
     @Query( """
-        select t from Token t inner join Employee e 
-        on t.employee.id = e.id
-        where t.employee.id = :employeeId AND t.loggedOut = false
+        select t from Token t inner join User e 
+        on t.user.id = e.id
+        where t.user.id = :userId AND t.loggedOut = false
             
             """)
-    List<Token> findAllTokensByUser(Long employeeId);
+    List<Token> findAllTokensByUser(Long userId);
 
     Optional<Token> findByToken(String token);
 

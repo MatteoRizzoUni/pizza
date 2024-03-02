@@ -6,15 +6,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import awesome.pizza.repository.EmployeeRepository;
+import awesome.pizza.repository.UserRepository;
 
 @Service
-public class EmployeeDetailsService implements UserDetailsService{
+public class CustomUserDetailsService implements UserDetailsService{
     
     @Autowired
-    private final EmployeeRepository repository;
+    private final UserRepository repository;
 
-    public EmployeeDetailsService(EmployeeRepository repository) {
+    public CustomUserDetailsService(UserRepository repository) {
         this.repository = repository;
     }
 

@@ -20,8 +20,8 @@ import jakarta.persistence.Table;
 
 
 @Entity
-@Table(name = "employee")
-public class Employee implements UserDetails{
+@Table(name = "user")
+public class User implements UserDetails{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,8 +45,8 @@ public class Employee implements UserDetails{
     @Enumerated(value = EnumType.STRING)
     Role role;
 
-    //same name as in Token class for Employee
-    @OneToMany(mappedBy = "employee")
+    //same name as in Token class for User
+    @OneToMany(mappedBy = "user")
     private List<Token> tokens;
 
 

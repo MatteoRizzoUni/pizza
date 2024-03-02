@@ -9,7 +9,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import awesome.pizza.service.EmployeeDetailsService;
+import awesome.pizza.service.CustomUserDetailsService;
 import awesome.pizza.service.JwtService;
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
@@ -21,11 +21,11 @@ import jakarta.servlet.http.HttpServletResponse;
 public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
     private final JwtService jwtService;
-    private final EmployeeDetailsService employeeDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, EmployeeDetailsService employeeDetailsService) {
+    public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService) {
         this.jwtService = jwtService;
-        this.employeeDetailsService = employeeDetailsService;
+        this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
@@ -49,11 +49,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 
         if( userName != null && SecurityContextHolder.getContext().getAuthentication() == null){
 
-            UserDetails emplyeeDetails = employeeDetailsService.loadUserByUsername(userName);
+            UserDetails UserDetails = customUserDetailsService.loadUserByUsername(userName);
 
-            if(jwtService.isValid(token, emplyeeDetails)){
+            if(jwtService.isValid(token, UserDetails)){
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                    emplyeeDetails, null, emplyeeDetails.getAuthorities());
+                    UserDetails, null, UserDetails.getAuthorities());
 
                 authToken.setDetails(
                     new WebAuthenticationDetailsSource().buildDetails(request)
@@ -62,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
-        // 
+        
         filterChain.doFilter(request, response);
 
 

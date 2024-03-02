@@ -26,9 +26,9 @@ public class Token {
     private boolean loggedOut;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Employee employee;
+    private User user;
 
     public Long getId() {
         return id;
@@ -54,12 +54,12 @@ public class Token {
         this.loggedOut = loggedOut;
     }
 
-    public Employee getEmployee() {
-        return employee;
+    public User getUser() {
+        return user;
     }
 
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
+    public void setUser(User user) {
+        this.user = user;
     }
 
 

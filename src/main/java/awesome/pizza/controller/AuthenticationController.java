@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import awesome.pizza.response.AuthenticationResponse;
-import awesome.pizza.model.Employee;
+import awesome.pizza.model.User;
 import awesome.pizza.service.AuthenticationService;
 
 @RestController
@@ -19,13 +19,13 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody Employee registerRequest) {
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody User registerRequest) {
         
         return ResponseEntity.ok(authenticationService.regiser(registerRequest));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody Employee loginRequest) {
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody User loginRequest) {
         return ResponseEntity.ok(authenticationService.authenticate(loginRequest));
     }
 }
