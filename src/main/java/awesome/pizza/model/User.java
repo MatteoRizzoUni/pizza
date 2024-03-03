@@ -39,9 +39,6 @@ public class User implements UserDetails{
     @Column(name = "last_name", nullable = false, length = 20)
     private String lastName;
 
-    @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean isBusy = false;
-
     @Enumerated(value = EnumType.STRING)
     Role role;
 
@@ -96,14 +93,6 @@ public class User implements UserDetails{
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public boolean isBusy() {
-        return isBusy;
-    }
-
-    public void setBusy(boolean isBusy) {
-        this.isBusy = isBusy;
     }
 
     public Role getRole() {

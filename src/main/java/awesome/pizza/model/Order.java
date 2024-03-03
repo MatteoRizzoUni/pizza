@@ -38,6 +38,18 @@ public class Order {
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = true)
+    private Employee employee;
+
+
+    public Employee getEmployee() {
+        return employee;
+    }
+
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
+    }
 
     public void setOrderDateTime(LocalDateTime orderDateTime) {
         this.orderDateTime = orderDateTime;

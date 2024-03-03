@@ -1,6 +1,6 @@
 package awesome.pizza.model;
 
 public enum Role {
-    USER,
+    EMPLOYEE,
     ADMIN
 }

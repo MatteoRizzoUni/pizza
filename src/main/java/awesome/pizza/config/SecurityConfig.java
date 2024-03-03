@@ -52,9 +52,10 @@ public class SecurityConfig {
                 req -> req
                     .requestMatchers("/login/**", "/register/**", 
                                                 "/demoAll", 
-                                                "/add-order/**", "/order/**", "/all-orders", "/status-order/**").permitAll()
+                                                "/add-order/**", "/order/**", "/all-orders", "/status-order/**",
+                                                "/register-employee").permitAll()
 
-                    .requestMatchers("/status-order/**", "/all-orders").hasAuthority(Role.USER.toString())
+                    .requestMatchers("/status-order/**", "/all-orders", "/demoAdmin").hasAuthority(Role.EMPLOYEE.toString())
 
                     .requestMatchers("/register/**",
                                                 "/demoAdmin", 

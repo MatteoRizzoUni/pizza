@@ -9,23 +9,25 @@ import org.springframework.stereotype.Service;
 
 import awesome.pizza.response.AuthenticationResponse;
 import awesome.pizza.model.User;
+import awesome.pizza.model.Employee;
+import awesome.pizza.model.Role;
 import awesome.pizza.model.Token;
 import awesome.pizza.repository.UserRepository;
 import awesome.pizza.repository.TokenRepository;
 
 @Service
 public class AuthenticationService {
-    private final UserRepository repository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
 
-    public AuthenticationService(UserRepository repository, 
-            PasswordEncoder passwordEncoder, JwtService jwtService, 
-            AuthenticationManager authenticationManager,
-            TokenRepository tokenRepository) {
-        this.repository = repository;
+    public AuthenticationService(
+                UserRepository userRepository, PasswordEncoder passwordEncoder, 
+                JwtService jwtService, AuthenticationManager authenticationManager, 
+                TokenRepository tokenRepository) {
+        this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
@@ -33,9 +35,9 @@ public class AuthenticationService {
     }
 
     //register user
-    public AuthenticationResponse regiser(User request) {
+    public AuthenticationResponse register(User request) {
 
-        if(repository.findByUsername(request.getUsername()).isPresent()) {
+        if(userRepository.findByUsername(request.getUsername()).isPresent()) {
             return new AuthenticationResponse(null, "User already exist");
         }
         
@@ -46,7 +48,7 @@ public class AuthenticationService {
         user.setLastName(request.getLastName());
         user.setRole(request.getRole());
 
-        user = repository.save(user);
+        user = userRepository.save(user);
 
         String jwtToken = jwtService.generateToken(user);
 
@@ -58,6 +60,30 @@ public class AuthenticationService {
 
     }
 
+    public AuthenticationResponse registerEmploy(Employee request) {
+
+        if(userRepository.findByUsername(request.getUsername()).isPresent()) {
+            return new AuthenticationResponse(null, "already exist");
+        }
+        
+        Employee employee = new Employee();
+        employee.setUsername(request.getUsername());
+        employee.setPassword(passwordEncoder.encode(request.getPassword()));
+        employee.setFirstName(request.getFirstName());
+        employee.setLastName(request.getLastName());
+        employee.setRole(Role.EMPLOYEE);
+
+        employee = userRepository.save(employee);
+
+        String jwtToken = jwtService.generateToken(employee);
+
+        //save generated Token
+        saveUserToken(employee, jwtToken);
+
+
+        return new AuthenticationResponse(jwtToken, employee.getRole() + ":" + employee.getUsername() + " registration was successful");
+
+    }
     
     //login user
     public AuthenticationResponse authenticate(User request) {
@@ -67,7 +93,7 @@ public class AuthenticationService {
                 request.getPassword())
             );
 
-        User user = repository.findByUsername(request.getUsername()).orElseThrow();
+        User user = userRepository.findByUsername(request.getUsername()).orElseThrow();
         String jwtToken = jwtService.generateToken(user);
 
         //revoke all token by user

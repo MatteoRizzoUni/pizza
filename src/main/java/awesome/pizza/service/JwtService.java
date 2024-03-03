@@ -27,7 +27,12 @@ public class JwtService {
 
     //extract the username from the token
     public String extractUsername(String token){
-        return extractClaim(token, Claims::getSubject);
+        try {
+            return extractClaim(token, Claims::getSubject);
+        } catch (Exception e) {
+            return null;
+        }
+        // return extractClaim(token, Claims::getSubject);
     }
 
     public boolean isValid(String token, UserDetails user){
