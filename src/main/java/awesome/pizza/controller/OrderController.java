@@ -12,7 +12,6 @@ import awesome.pizza.model.Customer;
 import awesome.pizza.model.Order;
 import awesome.pizza.response.CustomerOrderResponse;
 import awesome.pizza.response.OrderResponse;
-import awesome.pizza.service.JwtService;
 import awesome.pizza.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -26,13 +25,10 @@ public class OrderController {
 
     
     private final OrderService orderService;
-    private final JwtService jwtService;
 
-    
 
-    public OrderController(OrderService orderService, JwtService jwtService) {
+    public OrderController(OrderService orderService) {
         this.orderService = orderService;
-        this.jwtService = jwtService;
     }
 
     @PostMapping("/add-order")
@@ -68,15 +64,15 @@ public class OrderController {
 
             return ResponseEntity.badRequest().build();
         }
-
+ 
         String token = authHeader.substring(7);
         try {
-            System.out.println("token: " + token);
-            System.out.println("id: " + id);
-            System.out.println("order: " + order.getStatus());
+            
             return ResponseEntity.ok(orderService.putOrder(id, order, token));
+
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+
+            return ResponseEntity.badRequest().build();
         }
     }
 

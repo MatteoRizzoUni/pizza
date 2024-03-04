@@ -14,8 +14,6 @@ public class Employee extends User{
     @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean isBusy;
 
-    
-
     @OneToMany(mappedBy = "employee")
     private List<Order> orders;
 

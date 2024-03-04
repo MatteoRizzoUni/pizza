@@ -53,13 +53,15 @@ public class SecurityConfig {
                     .requestMatchers("/login/**", "/register/**", 
                                                 "/demoAll", 
                                                 "/add-order/**", "/order/**", "/all-orders", "/status-order/**",
-                                                "/register-employee").permitAll()
+                                                "/register-employee",
+                                                "/pizzas", "/pizza/**", "/add-pizza").permitAll()
 
                     .requestMatchers("/status-order/**", "/all-orders", "/demoAdmin").hasAuthority(Role.EMPLOYEE.toString())
 
                     .requestMatchers("/register/**",
                                                 "/demoAdmin", 
-                                                "/status-order/**", "/all-orders").hasAuthority(Role.ADMIN.toString())
+                                                "/status-order/**", "/all-orders", 
+                                                "/add-pizza").hasAuthority(Role.ADMIN.toString())
                     .anyRequest().authenticated()
             ).userDetailsService(customUserDetailsService)
             .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedHandler)
