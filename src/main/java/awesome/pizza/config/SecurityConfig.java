@@ -54,7 +54,7 @@ public class SecurityConfig {
                                                 "/demoAll", 
                                                 "/add-order/**", "/order/**", "/all-orders", "/status-order/**",
                                                 "/register-employee",
-                                                "/pizzas", "/pizza/**", "/add-pizza").permitAll()
+                                                "/pizzas", "/pizza/**", "/add-pizza", "/update-pizza/**", "/pizzas-available").permitAll()
 
                     .requestMatchers("/status-order/**", "/all-orders", "/demoAdmin").hasAuthority(Role.EMPLOYEE.toString())
 

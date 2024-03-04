@@ -30,7 +30,7 @@ public class Pizza {
     @Column(name = "price", nullable = false)
     private Double price;
 
-    @Column(name = "available", columnDefinition = "boolean default false")
+    @Column(name = "available")
     private boolean available;
 // OrderPizza Relationship
     @OneToMany(mappedBy = "pizza",
