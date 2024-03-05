@@ -1,64 +1,142 @@
 package awesome.pizza.service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import awesome.pizza.model.Customer;
 import awesome.pizza.model.Employee;
 import awesome.pizza.model.Order;
+import awesome.pizza.model.OrderPizza;
+import awesome.pizza.model.Pizza;
 import awesome.pizza.model.StatusOrder;
 import awesome.pizza.model.Token;
 import awesome.pizza.repository.CustomerRepository;
 import awesome.pizza.repository.EmployeeRepository;
+import awesome.pizza.repository.OrderPizzaRepository;
 import awesome.pizza.repository.OrderRepository;
+import awesome.pizza.repository.PizzaRepository;
 import awesome.pizza.repository.TokenRepository;
+import awesome.pizza.request.PizzaQuantityRequest;
 import awesome.pizza.response.CustomerOrderResponse;
 import awesome.pizza.response.CustomerResponse;
 import awesome.pizza.response.OrderResponse;
+import awesome.pizza.response.PizzaForOrderResponse;
 
 @Service
 public class OrderService {
     private final OrderRepository orderRepository;
     private final CustomerRepository customerRepository;
     private final EmployeeRepository employeeRepository;
+    private final PizzaRepository pizzaRepository;
+    private final OrderPizzaRepository orderPizzaRepository;
     private final TokenRepository tokenRepository;
 
-    public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository, EmployeeRepository employeeRepository, TokenRepository tokenRepository) {
+    public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository, 
+                        EmployeeRepository employeeRepository, PizzaRepository pizzaRepository,
+                        OrderPizzaRepository orderPizzaRepository, TokenRepository tokenRepository) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
+        this.pizzaRepository = pizzaRepository;
         this.employeeRepository = employeeRepository;
+        this.orderPizzaRepository = orderPizzaRepository;
         this.tokenRepository = tokenRepository;
     }
 
-    public CustomerOrderResponse addOrder(Customer requestCustomer, Order requestOrder) {
-        Customer customer = new Customer();
-        customer.setFirstName(requestCustomer.getFirstName());
-        customer.setLastName(requestCustomer.getLastName());
-        customer.setPhoneNumber(requestCustomer.getPhoneNumber());
 
-        customerRepository.findCustomerByPhoneNumber(requestCustomer.getPhoneNumber()).orElseGet(() -> {
+    public CustomerOrderResponse addOrder(Customer customerRequest, 
+                                            LocalDateTime orderDateTimeRequest,
+                                            List<PizzaQuantityRequest> pizzasRequestList){
+        //CUSTOMER SET                                        
+        Customer customer = new Customer();
+        customer.setFirstName(customerRequest.getFirstName());
+        customer.setLastName(customerRequest.getLastName());
+        customer.setPhoneNumber(customerRequest.getPhoneNumber());
+
+        customerRepository.findCustomerByPhoneNumber(customerRequest.getPhoneNumber()).orElseGet(() -> {
             return customerRepository.save(customer);
         });
 
+        //PIZZA SET
+        HashMap<Pizza, Integer> pizzas = new HashMap<>();
+        for(PizzaQuantityRequest pizzaRequest:  pizzasRequestList){
+             pizzas.put(pizzaRepository.findByName(pizzaRequest.getNamePizza())
+                                        .orElseThrow(() -> new RuntimeException("Pizza not found")), 
+                                        pizzaRequest.getQuantity());
+         }
+
+        Customer customerSaved = customerRepository.findCustomerByPhoneNumber(customer.getPhoneNumber()).get();
+
+        //ORDER SET
         Order order = new Order();
         order.setOrderDateTime();
-        order.setDeliveryOrderDateTime(requestOrder.getDeliveryOrderDateTime());
+        order.setDeliveryOrderDateTime(orderDateTimeRequest);
         order.setStatus(StatusOrder.RECEIVED);
-        order.setCustomer(customerRepository.findCustomerByPhoneNumber(requestCustomer.getPhoneNumber()).get());
+        order.setCustomer(customerSaved);
 
-        order = orderRepository.save(order);
+        Order orderSaved = orderRepository.save(order);
 
-        return new CustomerOrderResponse(new CustomerResponse(customer.getFirstName(),customer.getLastName()),
-                                        new OrderResponse("Order added", order.getId(), order.getStatus(), 
-                                                        order.getOrderDateTime(), order.getDeliveryOrderDateTime()));
+        List<PizzaForOrderResponse> pizzasResponse = new ArrayList<>();
+        
+        pizzas.forEach((pizza, quantity) -> {
 
+            //ORDERPIZZA SET
+            OrderPizza orderPizza = new OrderPizza();
+            orderPizza.setOrder(orderSaved);
+            orderPizza.setPizza(pizza);
+            orderPizza.setQuantity(quantity);
+            orderPizza.setSubTotal(pizza.getPrice() * orderPizza.getQuantity());
+            orderPizzaRepository.save(orderPizza);
+            //ORDERPIZZA RESPONSE SET
+            PizzaForOrderResponse pizzaResponse = new PizzaForOrderResponse();
+            pizzaResponse.setNamePizza(pizza.getName());
+            pizzaResponse.setQuantity(quantity);
+            pizzaResponse.setPrice(pizza.getPrice()* orderPizza.getQuantity());
+            pizzasResponse.add(pizzaResponse);
+            
+        });
+
+        double totalAmount = totalPriceOrder(pizzasResponse);
+
+        return new CustomerOrderResponse(new CustomerResponse(customerSaved.getFirstName(),customerSaved.getLastName()),
+                                        new OrderResponse("Order added", orderSaved.getId(), 
+                                                        orderSaved.getOrderDateTime(), orderSaved.getDeliveryOrderDateTime(),
+                                                        StatusOrder.RECEIVED, pizzasResponse, totalAmount));
     }
+
+
+    private double totalPriceOrder(List<PizzaForOrderResponse> pizzasResponse){
+        double totalAmount = 0;
+        for(PizzaForOrderResponse pizza: pizzasResponse){
+            totalAmount += pizza.getPrice();
+        }
+        return totalAmount;
+    }
+
 
     public OrderResponse getOrder(Long id) {
 
         Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        List<PizzaForOrderResponse> pizzasResponse = new ArrayList<>();
 
-        return new OrderResponse(null, order.getId(), order.getStatus(), 
-                                order.getOrderDateTime(), order.getDeliveryOrderDateTime());
+        orderPizzaRepository.findByOrderId(id).forEach(orderPizza -> {
+            PizzaForOrderResponse pizzaResponse = new PizzaForOrderResponse();
+            pizzaResponse.setNamePizza(orderPizza.getPizza().getName());
+            pizzaResponse.setQuantity(orderPizza.getQuantity());
+            pizzaResponse.setPrice(orderPizza.getSubTotal());
+            pizzasResponse.add(pizzaResponse);
+        });
+
+        double totalAmount = totalPriceOrder(pizzasResponse);
+
+        return new OrderResponse(null, order.getId(), 
+                                order.getOrderDateTime(), order.getDeliveryOrderDateTime(),
+                                order.getStatus(), pizzasResponse, totalAmount);
+
     }
 
     public OrderResponse putOrder(Long id, Order orderRequest, String tokenRequest) {

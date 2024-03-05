@@ -1,5 +1,8 @@
 package awesome.pizza.controller;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import awesome.pizza.model.Customer;
 import awesome.pizza.model.Order;
+import awesome.pizza.request.CustomerOrderRequestWrapped;
+import awesome.pizza.request.OrderPizzaQuantityRequest;
+import awesome.pizza.request.PizzaQuantityRequest;
 import awesome.pizza.response.CustomerOrderResponse;
 import awesome.pizza.response.OrderResponse;
 import awesome.pizza.service.OrderService;
@@ -32,12 +38,20 @@ public class OrderController {
     }
 
     @PostMapping("/add-order")
-    public ResponseEntity<CustomerOrderResponse> addOrder(@RequestBody CustomerOrderRequestWrapped customerOrderRequestWrapped) {
+    public ResponseEntity<CustomerOrderResponse> addOrder(
+                            @RequestBody CustomerOrderRequestWrapped customerOrderRequestWrapped) {
 
         try {
             Customer customerRequest = customerOrderRequestWrapped.getCustomer();
-            Order orderRequest = customerOrderRequestWrapped.getOrder();
-            return ResponseEntity.ok(orderService.addOrder(customerRequest, orderRequest));
+            OrderPizzaQuantityRequest orderPizzaRequest = customerOrderRequestWrapped.getOrder();
+            LocalDateTime orderDateTimeRequest = orderPizzaRequest.getDeliveryOrderDateTime();
+
+          
+            List<PizzaQuantityRequest> pizzaQuantityRequesList = orderPizzaRequest.getPizza();
+
+            return ResponseEntity.ok(orderService.addOrder(customerRequest, 
+                                                            orderDateTimeRequest, 
+                                                            pizzaQuantityRequesList));
 
         }catch (RuntimeException e) {
             return ResponseEntity.badRequest().build();
