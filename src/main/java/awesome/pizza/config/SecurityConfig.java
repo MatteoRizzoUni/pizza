@@ -44,23 +44,20 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        //TODO: REMOVE "/all-orders", "/status-order/** "/demoAll" "/register/" FROM permitAll() 
-        //     AND "/demoAdmin" FROM hasAuthority(Role.ADMIN.toString())
+       
         return http
             .csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(
                 req -> req
-                    .requestMatchers("/login/**", "/register/**", 
-                                                "/demoAll", 
-                                                "/add-order/**", "/order/**", "/all-orders", "/status-order/**",
-                                                "/register-employee",
-                                                "/pizzas", "/pizza/**", "/add-pizza", "/update-pizza/**", "/pizzas-available").permitAll()
+                    .requestMatchers("/login/**", "/register/**",  
+                                                "/add-order/**", "/order/**",
+                                                "/pizzas", "/pizza/**", "/update-pizza/**", "/pizzas-available").permitAll()
 
-                    .requestMatchers("/status-order/**", "/all-orders", "/demoAdmin").hasAuthority(Role.EMPLOYEE.toString())
+                    .requestMatchers("/status-order/**", "/all-orders", "/demoAdmin", "/all-orders").hasAuthority(Role.EMPLOYEE.toString())
 
-                    .requestMatchers("/register/**",
+                    .requestMatchers("/register/**", "/register-employee",
                                                 "/demoAdmin", 
-                                                "/status-order/**", "/all-orders", 
+                                                "/status-order/**", 
                                                 "/add-pizza").hasAuthority(Role.ADMIN.toString())
                     .anyRequest().authenticated()
             ).userDetailsService(customUserDetailsService)
